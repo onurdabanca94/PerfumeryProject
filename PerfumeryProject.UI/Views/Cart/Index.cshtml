@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container">
+    <h1 class="text-center">Sepetim</h1>
+    <div class="row">
+        <div class="col-sm-9 mx-auto">
+            <table id="cart-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Marka</th>
+                        <th>Parfüm Adı</th>
+                        <th>Adet Fiyatı</th>
+                        <th>Miktar</th>
+                        <th>Ürün Toplam Fiyatı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="cart-items">
+                    <!-- Sepet içeriği burada dinamik olarak oluşturulacak -->
+                </tbody>
+            </table>
+            <div id="cart-total" class="text-right float-end">
+                Toplam Fiyat: <span id="total-price">0</span> ₺
+                <button id="order-button" type="button" class="btn btn-success mx-2">Sipariş Ver</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts
+    {
+        <script src="~/js/cart.js"></script>
+        <script>
+            $(document).ready(function () {
+                GetCartList();
+            });
+        </script>
+}

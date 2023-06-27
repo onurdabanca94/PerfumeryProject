@@ -118,7 +118,8 @@ namespace PerfumeryProject.API.Controllers
                                     OrderDate = o.OrderDate,
                                     OrderId = ci.OrderId,
                                     PerfumeName = ci.Name,
-                                    Quantity = ci.Quantity
+                                    Quantity = ci.Quantity,
+                                    Price = ci.Price
                                 }).Where(x => x.UserId == userId && x.OrderId == lastOrder.Id!).ToList();
 
                 _logger.LogInformation("Sipariş özeti listelendi.");
@@ -164,7 +165,8 @@ namespace PerfumeryProject.API.Controllers
                                     OrderDate = o.OrderDate,
                                     OrderId = ci.OrderId,
                                     PerfumeName = ci.Name,
-                                    Quantity = ci.Quantity
+                                    Quantity = ci.Quantity,
+                                    Price = ci.Price
                                 }).Where(x => x.UserId == userId && x.OrderId == data.OrderId).ToList();
 
                 _logger.LogInformation("Sipariş özeti listelendi.");

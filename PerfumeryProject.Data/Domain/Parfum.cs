@@ -1,4 +1,6 @@
-﻿namespace PerfumeryProject.Data.Domain
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PerfumeryProject.Data.Domain
 {
     public class Parfum : BaseEntity
     {

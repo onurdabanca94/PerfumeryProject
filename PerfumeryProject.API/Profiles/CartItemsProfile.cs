@@ -9,6 +9,7 @@ namespace PerfumeryProject.API.Profiles
         public CartItemsProfile()
         {
             this.CreateMap<CartItem, CreateCartItemsDto>().ReverseMap();
+            this.CreateMap<CartItem, SaveOrUpdateCartItemDto>().ReverseMap();
         }
     }
 }

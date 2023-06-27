@@ -50,6 +50,71 @@ namespace PerfumeryProject.API.Controllers
             }
         }
 
+        [HttpPost("save-or-update-cart-item")]
+        public async Task<IActionResult> SaveOrUpdateCartItem([FromBody] SaveOrUpdateCartItemDto data)
+        {
+            try
+            {
+                var itemData = _service.GetListByExpressionAsync(x=> x.UserId == data.UserId && x.IsOrdered == false && x.BrandName == data.BrandName && x.Name == data.Name).FirstOrDefault();
+                if (itemData == null) //Save at
+                {
+                    try
+                    {
+                        var user = await _userService.GetByIdAsync(data.UserId).ConfigureAwait(false);
+                        if (user == null)
+                        {
+                            _logger.LogInformation("Kullanıcı bulunamadı.");
+                            return NotFound(new { IsSuccess = false, message = "Kullanıcı bulunamadı." });
+                        }
+                        var orderedCartList = _service.GetListByExpressionAsync(x => x.UserId == data.UserId && x.IsOrdered == true).ToList();
+                        if (!orderedCartList.HasValue())
+                        {
+                            data.CartNumber = 1;
+                        }
+                        else
+                        {
+                            data.CartNumber = orderedCartList.LastOrDefault()!.CartNumber + 1;
+                        }
+                        var mappedData = _mapper.Map<CartItem>(data);
+                        mappedData.CreatedDate = DateTime.Now;
+                        await _service.AddAsync(mappedData).ConfigureAwait(false);
+                        string logString = $"Sepete {data.UserId} id'li kişi tarafından {data.BrandName} markasından {data.Name} isimli parfüm {data.Quantity} adet, {DateTime.Now} tarihinde, {data.Price * data.Quantity} fiyatına eklendi.";
+                        _logger.LogInformation(logString);
+                        _logger.LogInformation("Sepete ürün kaydedildi.");
+                        return Ok(new { IsSuccess = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        return BadRequest(new { IsSuccess = false, message = ex.Message });
+                    }
+                }
+                else //Update at
+                {
+                    try
+                    {
+                        itemData.Quantity += data.Quantity;
+                        itemData.UpdatedDate = DateTime.Now;
+                        await _service.UpdateAsync(itemData).ConfigureAwait(false);
+                        string logString = $"Sepete {itemData.UserId} id'li kişi tarafından {itemData.BrandName} markasından {itemData.Name} isimli parfüm {data.Quantity} adet, {DateTime.Now} tarihinde, {data.Quantity * data.Price} fiyatına güncellendi.";
+                        _logger.LogInformation(logString);
+                        _logger.LogInformation("Sepette ürün güncellendi.");
+                        return Ok(new { IsSuccess = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        return BadRequest(new { IsSuccess = false, message = ex.Message });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { IsSuccess = false, message = ex.Message });
+            }
+        }
+
         [HttpPost("create-cart-item")]
         public async Task<IActionResult> CreateCartItem([FromBody] CreateCartItemsDto data)
         {

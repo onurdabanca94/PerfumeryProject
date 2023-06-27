@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container">
+    <h1 class="text-center">Siparişlerim</h1>
+    <div class="row">
+        <div class="col-sm-9 mx-auto">
+            <table id="order-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Sipariş Adı</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="order-items">
+                    <!-- Sipariş içeriği burada dinamik olarak oluşturulacak -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script src="~/js/order.js"></script>
+    <script>
+        $(document).ready(function () {
+            GetOrderList();
+        });
+    </script>
+}

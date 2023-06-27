@@ -8,6 +8,7 @@ using PerfumeryProject.API.DTOs.User;
 using PerfumeryProject.API.Extensions;
 using PerfumeryProject.Business.Abstraction;
 using PerfumeryProject.Data.Domain;
+using System.Collections.Generic;
 
 namespace PerfumeryProject.API.Controllers
 {
@@ -28,6 +29,40 @@ namespace PerfumeryProject.API.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
+        [EnableQuery]
+        public async Task<IEnumerable<GetParfumeWithBrandDto>> Get()
+        {
+            try
+            {
+                var list = await _service.GetAllAsync().ConfigureAwait(false);
+                _logger.LogInformation("Tüm parfümlerin listesi alınmaya çalışıldı.");
+                if (list.HasValue())
+                {
+                    _logger.LogInformation("Tüm parfümlerin listesi alındı.");
+                    var response = (from p in list.ToList()
+                                    join b in await _brandService.GetAllAsync().ConfigureAwait(false)
+                                    on p.BrandId equals b.Id
+                                    select new GetParfumeWithBrandDto()
+                                    {
+                                        Id = p.Id,
+                                        BrandId = p.BrandId,
+                                        Name = p.Name,
+                                        Price = p.Price,
+                                        BrandName = b.Name
+                                    }).ToList();
+                    return response;
+                }
+                _logger.LogInformation("Parfüm bulunamadı.");
+                return new List<GetParfumeWithBrandDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return new List<GetParfumeWithBrandDto>();
+            }
+        }
+
         [HttpPost("get-all-parfumes")]
         [EnableQuery]
         public async Task<IActionResult> GetAllParfumes()
@@ -39,7 +74,18 @@ namespace PerfumeryProject.API.Controllers
                 if (list.HasValue())
                 {
                     _logger.LogInformation("Tüm parfümlerin listesi alındı.");
-                    return Ok(new { IsSuccess = true, data = list.ToList() });
+                    var response = (from p in list.ToList()
+                                    join b in await _brandService.GetAllAsync().ConfigureAwait(false)
+                                    on p.BrandId equals b.Id
+                                    select new GetParfumeWithBrandDto()
+                                    {
+                                        Id = p.Id,
+                                        BrandId = p.BrandId,
+                                        Name = p.Name,
+                                        Price = p.Price,
+                                        BrandName = b.Name
+                                    }).ToList();
+                    return Ok(new { IsSuccess = true, data = response });
                 }
                 _logger.LogInformation("Parfüm bulunamadı.");
                 return NotFound(new { IsSuccess = false, message = "Parfüm bulunamadı." });
@@ -61,7 +107,21 @@ namespace PerfumeryProject.API.Controllers
                 if (data != null)
                 {
                     _logger.LogInformation("Parfüm bilgisi alındı.");
-                    return Ok(new { IsSuccess = true, data = data });
+                    var brand = await _brandService.GetByIdAsync(data.BrandId).ConfigureAwait(false);
+                    if (brand == null)
+                    {
+                        _logger.LogInformation("Marka bulunamadı.");
+                        return NotFound(new { IsSuccess = false, message = "Marka bulunamadı." });
+                    }
+                    var response = new GetParfumeWithBrandDto()
+                    {
+                        BrandId = data.BrandId,
+                        Id = data.Id,
+                        Name = data.Name,
+                        Price = data.Price,
+                        BrandName = brand.Name
+                    };
+                    return Ok(new { IsSuccess = true, data = response });
                 }
                 _logger.LogInformation("Parfüm bulunamadı.");
                 return NotFound(new { IsSuccess = false, message = "Parfüm bulunamadı." });
@@ -83,7 +143,18 @@ namespace PerfumeryProject.API.Controllers
                 if (data.HasValue())
                 {
                     _logger.LogInformation("Parfüm listesi alındı.");
-                    return Ok(new { IsSuccess = true, data = data });
+                    var response = (from p in data.ToList()
+                                    join b in await _brandService.GetAllAsync().ConfigureAwait(false)
+                                    on p.BrandId equals b.Id
+                                    select new GetParfumeWithBrandDto()
+                                    {
+                                        Id = p.Id,
+                                        BrandId = p.BrandId,
+                                        Name = p.Name,
+                                        Price = p.Price,
+                                        BrandName = b.Name
+                                    }).ToList();
+                    return Ok(new { IsSuccess = true, data = response });
                 }
                 _logger.LogInformation("Parfüm bulunamadı.");
                 return NotFound(new { IsSuccess = false, message = "Parfüm bulunamadı." });
@@ -102,12 +173,13 @@ namespace PerfumeryProject.API.Controllers
             try
             {
                 var brand = await _brandService.GetByIdAsync(data.BrandId).ConfigureAwait(false);
-                if(brand == null)
+                if (brand == null)
                 {
                     _logger.LogInformation("Marka bulunamadı.");
                     return NotFound(new { IsSuccess = false, message = "Marka bulunamadı." });
                 }
                 var mappedData = _mapper.Map<Parfum>(data);
+                mappedData.BrandName = brand;
                 await _service.AddAsync(mappedData).ConfigureAwait(false);
                 _logger.LogInformation("Parfüm kaydedildi.");
                 return Ok(new { IsSuccess = true });

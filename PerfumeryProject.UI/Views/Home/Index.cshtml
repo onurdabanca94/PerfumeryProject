@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container">
+    <h1>Parfümler</h1>
+    <div class="row my-2">
+        <div class="col-12">
+            <button class="btn btn-primary btn-lg" onclick="GotoAddParfume();">Parfüm Ekle</button>
+        </div>
+    </div>
+    <div class="row" id="parfume-row">
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script src="~/js/parfume.js"></script>
+    <script>
+        $(document).ready(function () {
+            GetParfumeList();
+        });
+    </script>
+}

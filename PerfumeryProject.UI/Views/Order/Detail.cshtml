@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Detail";
+}
+
+<div class="container">
+    <h1 class="text-center">Sipariş Detay</h1>
+    <div class="row">
+        <div class="col-sm-9 mx-auto">
+            <table id="order-detail-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı Adı</th>
+                        <th>Marka</th>
+                        <th>Parfüm Adı</th>
+                        <th>Miktar</th>
+                        <th>Birim Fiyat</th>
+                        <th>Ürün Toplam Fiyatı</th>
+                        <th>Sipariş Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody id="order-detail-items">
+                    <!-- Sipariş içeriği burada dinamik olarak oluşturulacak -->
+                </tbody>
+            </table>
+            <div id="order-detail-cart-total" class="text-right float-end">
+                Toplam Fiyat: <span id="order-detail-total-price">0</span> ₺
+                <button id="order-detail-back-button" type="button" class="btn btn-success mx-2" onclick="GotoOrderPage();">Geri Dön</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/order.js"></script>
+    <script>
+        $(document).ready(function () {
+            GetOrderDetail(GetQueryString());
+        });
+    </script>
+}
+

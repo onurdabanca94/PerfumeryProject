@@ -6,6 +6,7 @@
         public Guid? OrderId { get; set; }
         public string BrandName { get; set; }
         public string Fullname { get; set; }
+        public decimal Price { get; set; }
         public decimal TotalPrice { get; set; }
         public int Quantity { get; set; }
         public string PerfumeName { get; set; }

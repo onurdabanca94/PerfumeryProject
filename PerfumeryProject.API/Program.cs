@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using PerfumeryProject.API.DTOs.Parfume;
 using PerfumeryProject.Business.Abstraction;
 using PerfumeryProject.Business.Concrete;
 using PerfumeryProject.Core.Abstraction;
@@ -19,6 +20,16 @@ namespace PerfumeryProject.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddControllers()
+                .AddOData(options => options
+                .AddRouteComponents("odata", GetEdmModel())
+                .Select()
+                .Filter()
+                .OrderBy()
+                .SetMaxTop(100)
+                .Count()
+                .Expand());
+
             // Add services to the container.
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IUserService, UserService>();
@@ -27,15 +38,6 @@ namespace PerfumeryProject.API
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IParfumService, ParfumService>();
             builder.Services.AddCors(opts => opts.AddDefaultPolicy(pol => pol.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod()));
-
-            builder.Services.AddControllers()
-                .AddOData(options => options.Select()
-                .Filter()
-                .Expand()
-                .OrderBy()
-                .Count()
-                .SetMaxTop(100)
-                .AddRouteComponents("odata", GetEdmModel()));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -63,6 +65,7 @@ namespace PerfumeryProject.API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.UseCors();
 
             app.Run();
         }
@@ -70,7 +73,7 @@ namespace PerfumeryProject.API
         public static IEdmModel GetEdmModel()
         {
             var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Parfum>("Parfums");
+            builder.EntitySet<GetParfumeWithBrandDto>("Parfume");
             return builder.GetEdmModel();
         }
     }
