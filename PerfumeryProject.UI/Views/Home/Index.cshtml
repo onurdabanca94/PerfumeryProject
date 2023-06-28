@@ -2,6 +2,45 @@
     ViewData["Title"] = "Home Page";
 }
 
+@{
+    var page = !string.IsNullOrWhiteSpace(accessor.HttpContext.Request.Query["page"]) ? Convert.ToInt32(accessor.HttpContext.Request.Query["page"]) : 1; // Sayfa numarasını al veya varsayılan olarak 1'i kullan
+    var pageSize = 9; // Sayfa başına öğe sayısı
+    var skip = (page - 1) * pageSize; // Atlama sayısı hesaplama
+    ViewBag.pagesize = pageSize;
+    ViewBag.skip = skip;
+    var url = "odata/Parfume?$top=" + pageSize + "&$skip=" + skip + "&count=true"; // OData sorgusu oluşturma
+    if (ViewBag.orderBy == "asc")
+    {
+        url += "&orderby=price asc";
+    }
+    else {
+        url += "&orderby=price desc";
+    }
+
+    if (ViewBag.searchText != null && ViewBag.brandId != null && ViewBag.brandId > 0)
+    {
+        url += "&filter=brandid eq " + ViewBag.brandId + " and contains(tolower(name),tolower('" + ViewBag.searchText + "'))";
+    }
+    else if (ViewBag.searchText == null && ViewBag.brandId == null && ViewBag.brandId > 0)
+    {
+        url += "&filter=brandid eq " + ViewBag.brandId;
+    }
+
+    else if (ViewBag.searchText != null && ((ViewBag.brandId != null && ViewBag.brandId <= 0) || ViewBag.brandId == null))
+    {
+        url += "&filter=contains(tolower(name),tolower('" + ViewBag.searchText + "'))";
+    }
+
+}
+
+@{
+    var httpClient = new HttpClient();
+    httpClient.BaseAddress = new Uri(configuration["API:BaseUrl"].ToString());
+    var response = await httpClient.GetAsync(url);
+    var data = await response.Content.ReadAsStringAsync();
+    var result = JsonConvert.DeserializeObject<dynamic>(data);
+}
+
 <div class="container">
     <h1>Parfümler</h1>
     <div class="row my-2">
@@ -9,8 +48,62 @@
             <button class="btn btn-primary btn-lg" onclick="GotoAddParfume();">Parfüm Ekle</button>
         </div>
     </div>
+    <div class="row my-2">
+        <div class="col-4">
+            <input type="text" name="search" id="search" class="form-control" autocomplete="off" placeholder="Aranacak Kelime" />
+        </div>
+        <div class="col-4">
+            <select id="parfume-brands" class="form-control">
+            </select>
+        </div>
+        <div class="col-4">
+            <div class="dropdown float-start">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sırala
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                    <button class="dropdown-item" type="button" onclick="ListOrder('asc')">Fiyata göre artan</button>
+                    <button class="dropdown-item" type="button" onclick="ListOrder('desc')">Fiyata göre azalan</button>
+                </div>
+            </div>
+            <div class="float-start mx-2">
+                <button class="btn btn-primary" type="button" onclick="GetParfumeList()">Filtrele</button>
+                <button class="btn btn-success mx-2" type="button" onclick="goToHomepage()">Temizle</button>
+            </div>
+        </div>
+    </div>
     <div class="row" id="parfume-row">
     </div>
+    @{
+        var totalItems = result["@odata.count"]; // Toplam öğe sayısını al
+        var totalPages = (int)Math.Ceiling((double)totalItems / pageSize); // Toplam sayfa sayısını hesapla
+    }
+
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <!-- Önceki sayfa bağlantısı -->
+                @if (page > 1)
+                {
+                    <li class="page-item"><a href="?page=@(page - 1)" class="page-link">Önceki</a></li>
+                }
+
+                <!-- Sayfa numaraları bağlantıları -->
+                @for (var i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item"><a href="?page=@i" class="page-link @((page == i) ? "active" : "")">@i</a></li>
+                }
+
+                <!-- Sonraki sayfa bağlantısı -->
+                @if (page < totalPages)
+                {
+                    <li class="page-item"><a href="?page=@(page + 1)" class="page-link">Sonraki</a></li>
+                }
+            </ul>
+        </nav>
+
+    }
 </div>
 
 @section Scripts
@@ -18,7 +111,10 @@
     <script src="~/js/parfume.js"></script>
     <script>
         $(document).ready(function () {
+            pageSize = @ViewBag.pagesize;
+            skip = @ViewBag.skip;
             GetParfumeList();
+            GetFilterBrands();
         });
     </script>
 }

@@ -2,7 +2,6 @@
 {
     Post(baseUrl + "api/Order/get-order-history", {}, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
             let response = data.data;
             $('#order-items').html('');
             for (var i = 0; i < response.length; i++)
@@ -16,10 +15,10 @@
             }
         }
         else {
-            console.log("error");
+            toastr.error("Sipariş geçmişi bilgileri getirilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sipariş geçmişi bilgileri getirilemedi.");
     });
 }
 
@@ -46,7 +45,6 @@ function GetOrderDetail(orderId) {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/Order/get-selected-order", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
             let response = data.data;
 
             $('#order-detail-items').html('');
@@ -61,10 +59,10 @@ function GetOrderDetail(orderId) {
             $('#order-detail-total-price').text(totalPrice.toFixed(2));
         }
         else {
-            console.log("error");
+            toastr.error("Sipariş detayı getirilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sipariş detayı getirilemedi.");
     });
 }
 

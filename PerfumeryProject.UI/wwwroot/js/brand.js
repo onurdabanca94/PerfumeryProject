@@ -14,10 +14,10 @@
             }
         }
         else {
-            console.log("error");
+            toastr.error("Markalar getirilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Markalar getirilemedi.");
     });
 }
 
@@ -50,21 +50,28 @@ $('.back-brand-button').on('click', function () {
 
 
 function InsertBrand() {
+    let brandName = $('#brand-name').val();
+
+    if (!brandName) {
+        toastr.error("Boş alanları doldurun.");
+        return;
+    }
+
     let input = {
-        "name": $('#brand-name').val()
+        "name": brandName
     };
 
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/brand/add-brand", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GetBrandList();
         }
         else {
-            console.log("error");
+            toastr.error("Marka eklenemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Marka eklenemedi.");
     });
 }
 
@@ -76,14 +83,14 @@ function DeleteBrand(id) {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/brand/delete-brand", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GetBrandList();
         }
         else {
-            console.log("error");
+            toastr.error("Marka silinemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Marka silinemedi.");
     });
 }
 
@@ -115,29 +122,36 @@ function GetBrandInfo(id) {
             ShowUpdateBrand();
         }
         else {
-            console.log("error");
+            toastr.error("Marka bilgileri görüntülenemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Marka bilgileri görüntülenemedi.");
     });
 }
 
 function UpdateBrand(id) {
+    let brandName = $('#update-brand-name').val();
+
+    if (!brandName) {
+        toastr.error("Boş alanları doldurun.");
+        return;
+    }
+
     let input = {
         "id": id,
-        "name": $('#update-brand-name').val()
+        "name": brandName
     };
 
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/brand/update-brand", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GetBrandList();
         }
         else {
-            console.log("error");
+            toastr.error("Marka güncellenemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Marka güncellenemedi.");
     });
 }

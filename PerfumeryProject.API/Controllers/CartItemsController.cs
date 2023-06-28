@@ -41,7 +41,7 @@ namespace PerfumeryProject.API.Controllers
                     return Ok(new { IsSuccess = true, data = data });
                 }
                 _logger.LogInformation("Sepet bulunamadı ya da ödemesi alındı.");
-                return NotFound(new { IsSuccess = false, message = "Sepet bulunamadı ya da ödemesi alındı." });
+                return Ok(new { IsSuccess = false, message = "Sepet bulunamadı ya da ödemesi alındı." });
             }
             catch (Exception ex)
             {

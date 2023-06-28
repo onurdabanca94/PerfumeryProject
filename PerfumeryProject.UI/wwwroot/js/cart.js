@@ -1,21 +1,4 @@
-﻿//function addToCart(item) {
-//    var existingItem = findCartItem(item);
-//    if (existingItem) {
-//        existingItem.quantity++;
-//        existingItem.totalPrice = existingItem.price * existingItem.quantity;
-//        updateCartItem(existingItem);
-//    } else {
-//        item.totalPrice = item.price * item.quantity;
-//        var row = createCartItemRow(item);
-//        $('#cart-items').append(row);
-//    }
-
-//    var totalPrice = parseFloat($('#total-price').text());
-//    totalPrice += item.price;
-//    $('#total-price').text(totalPrice.toFixed(2));
-//}
-
-function findCartItem(item) {
+﻿function findCartItem(item) {
     var existingItem = null;
     $('#cart-items tr').each(function () {
         var brand = $(this).find('.cart-item-brand').text();
@@ -66,7 +49,7 @@ function removeFromCart(item) {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/CartItems/delete-cart-item", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
 
             var totalPrice = parseFloat($('#total-price').text());
             totalPrice -= item.totalPrice;
@@ -75,10 +58,10 @@ function removeFromCart(item) {
             GetCartList();
         }
         else {
-            console.log("error");
+            toastr.error("Sepetten ürün silinemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sepetten ürün silinemedi.");
     });
 }
 
@@ -98,14 +81,14 @@ function updateFromCart(item) {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/CartItems/update-cart-item", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GetCartList();
         }
         else {
-            console.log("error");
+            toastr.error("Sepetteki ürün bilgisi güncellenemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sepetteki ürün bilgisi güncellenemedi.");
     });
 }
 
@@ -119,13 +102,11 @@ function GetCartList() {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/CartItems/get-items", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
 
             let response = data.data;
 
             $('#cart-items').html('');
             for (var i = 0; i < response.length; i++) {
-                console.log(response[i]);
                 var row = createCartItemRow(response[i]);
                 $('#cart-items').append(row);
                 sumPrice += response[i].totalPrice;
@@ -136,10 +117,15 @@ function GetCartList() {
             $('#total-price').text(totalPrice.toFixed(2));
         }
         else {
-            console.log("error");
+            $('#cart-items').html('');
+
+            var totalPrice = 0;
+            totalPrice += sumPrice;
+            $('#total-price').text(totalPrice.toFixed(2));
+
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sepet boş veya sepet bilgileri getirilemedi.");
     });
 }
 
@@ -154,14 +140,14 @@ $('#order-button').click(function () {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/Order/create-order", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GotoOrderPage();
         }
         else {
-            console.log("error");
+            toastr.error("Sipariş verilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sipariş verilemedi.");
     });
 });
 

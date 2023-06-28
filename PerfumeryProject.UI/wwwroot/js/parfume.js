@@ -1,29 +1,55 @@
-﻿function GetParfumeList() {
-    Post(baseUrl + "api/parfume/get-all-parfumes", {}, function (data) {
-        if (data.isSuccess) {
-            var response = data.data;
-            $('#parfume-row').html('');
-            for (var i = 0; i < response.length; i++) {
-                let d = response[i];
-                $('#parfume-row').append(`<div class="col-sm-4 my-2">
+﻿var OrderByParam = "asc";
+var pageSize = 0;
+var skip = 0;
+
+function GetParfumeList() {
+    var url = baseUrl + "odata/Parfume?";
+    var searchText = $('#search').val();
+    var brandSelection = Number($('#parfume-brands').val());
+
+    sendSearchValue();
+
+    if (OrderByParam == "asc") {
+        url += "orderby=price asc"
+    }
+    else {
+        url += "orderby=price desc"
+    }
+
+    if (searchText && brandSelection && brandSelection > 0) {
+        url += "&filter=brandid eq " + brandSelection + " and contains(tolower(name),tolower('" + searchText + "'))";
+    }
+    else if (!searchText && brandSelection && brandSelection > 0) {
+        url += "&filter=brandid eq " + brandSelection;
+    }
+
+    else if (searchText && ((brandSelection && brandSelection <= 0) || !brandSelection)) {
+        url += "&filter=contains(tolower(name),tolower('" + searchText + "'))";
+    }
+
+    url += "&top=" + pageSize + "&$skip=" + skip + "&count=true";
+
+    Get(url, {}, function (data) {
+        var response = data.value;
+        $('#parfume-row').html('');
+        for (var i = 0; i < response.length; i++) {
+            let d = response[i];
+            $('#parfume-row').append(`<div class="col-sm-4 my-2">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">${response[i].brandName}</h5>
-                            <p class="card-text">${response[i].name}</p>
-                            <p class="card-text">Fiyatı : ${response[i].price}₺</p>
-                            <p class="card-text"><input type="number" min="0" name="quantity-${response[i].id}" class="form-control quantity-${response[i].id}" placeholder="Eklenecek ürün miktarı"/></p>
-                            <a href="/Home/ParfumeDetail?parfumeId=${response[i].id}" class="btn btn-primary">Detayı Görüntüle</a>
+                            <h5 class="card-title">${response[i].BrandName}</h5>
+                            <p class="card-text">${response[i].Name}</p>
+                            <p class="card-text">Fiyatı : ${response[i].Price}₺</p>
+                            <p class="card-text"><input type="number" min="0" name="quantity-${response[i].Id}" class="form-control quantity-${response[i].Id}" placeholder="Sepete eklenecek miktar"/></p>
+                            <a href="/Home/ParfumeDetail?parfumeId=${response[i].Id}" class="btn btn-primary">Detayı Görüntüle</a>
                             <button class="btn btn-primary float-end" onclick="AddToCart('${JSON.stringify(d).replaceAll('"', '\\\'')}')">Sepete Ekle</button>
                         </div>
                     </div>
                 </div>`);
-            }
         }
-        else {
-            console.log("error");
-        }
+
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Ürün bulunamadı."); //Error
     });
 }
 
@@ -53,10 +79,10 @@ function GetParfumeDetail() {
                 </div>`);
         }
         else {
-            console.log("error");
+            toastr.error("Parfüm detayı getirilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Parfüm detayı getirilemedi.");
     });
 }
 
@@ -67,7 +93,7 @@ function updateParfume() {
     let price = Number($('#parfumePrice').val());
 
     if (!parfumeId || !name || !price) {
-        console.log("Boş alanlar var.");
+        toastr.error("Boş alanları doldurun.");
         return;
     }
 
@@ -80,14 +106,14 @@ function updateParfume() {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/parfume/update-parfume", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             window.location.href = "/";
         }
         else {
-            console.log("error");
+            toastr.error("Parfüm güncellenemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Parfüm güncellenemedi.");
     });
 }
 
@@ -101,14 +127,14 @@ function deleteParfume() {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/parfume/delete-parfume", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             window.location.href = "/";
         }
         else {
-            console.log("error");
+            toastr.error("Parfüm silinemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Parfüm silinemedi.");
     });
 }
 
@@ -131,10 +157,10 @@ function GetAllBrands() {
             }
         }
         else {
-            console.log("error");
+            toastr.error("Markalar getirilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Markalar getirilemedi.");
     });
 }
 
@@ -160,7 +186,7 @@ function AddParfume() {
     let price = $('#price-input').val();
 
     if (!brandId || !name || !price) {
-        console.log("Boş alanlar var.");
+        toastr.error("Boş alanları doldurun.");
         return;
     }
 
@@ -173,26 +199,24 @@ function AddParfume() {
     let obj = JSON.stringify(input, null, 2);
     Post(baseUrl + "api/parfume/create-parfume", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             window.location.href = "/";
         }
         else {
-            console.log("error");
+            toastr.error("Parfüm kaydedilemedi.");
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Parfüm kaydedilemedi.");
     });
 }
 
 function AddToCart(requestInput) {
     var inp = JSON.parse(requestInput.replaceAll('\'','"'));
-    console.log(inp);
-    console.log(`.quantity-${inp.id}`);
     var userId = "0ba772f5-61a3-475e-9ba7-08db767cf11e";
-    var brandName = inp.brandName;
-    var perfumeName = inp.name;
-    var price = Number(inp.price);
-    var newQuantity = Number($(`.quantity-${inp.id}`).val());
+    var brandName = inp.BrandName;
+    var perfumeName = inp.Name;
+    var price = Number(inp.Price);
+    var newQuantity = Number($(`.quantity-${inp.Id}`).val() || 1);
 
     var input = {
         "userId": userId,
@@ -205,22 +229,76 @@ function AddToCart(requestInput) {
         "name": perfumeName
     };
 
-    let obj = JSON.stringify(input, null, 2);
     console.log(input);
+
+    let obj = JSON.stringify(input, null, 2);
 
     Post(baseUrl + "api/CartItems/save-or-update-cart-item", obj, function (data) {
         if (data.isSuccess) {
-            console.log("İşlem başarılı.");
+            toastr.success("İşlem başarılı.");
             GotoCartPage();
         }
         else {
-            console.log("error");
+            toastr.error("Sepete eklenecek miktar girin."); //Error
         }
     }, function (error) {
-        console.log(error); //Error
+        toastr.error("Sepete eklenecek miktar girin."); //Error
     });
 }
 
 function GotoCartPage() {
     window.location.href = "/Cart/Index";
+}
+
+function GetFilterBrands() {
+    Post(baseUrl + "api/brand/get-all-brands", {}, function (data) {
+        if (data.isSuccess) {
+            var response = data.data;
+            $('#parfume-brands').html('');
+            $('#parfume-brands').append(`<option value="-1">Tüm Markalar</option>`);
+            for (var i = 0; i < response.length; i++) {
+                $('#parfume-brands').append(`<option value="${response[i].id}">${response[i].name}</option>`);
+            }
+        }
+        else {
+            toastr.error("Filtre bölümündeki markalar getirilemedi.");
+        }
+    }, function (error) {
+        toastr.error("Filtre bölümündeki markalar getirilemedi.");
+    });
+}
+
+
+function ListOrder(sortType) {
+    switch (sortType) {
+        case "asc":
+            OrderByParam = "asc";
+            $('#dropdownMenu2').html("Fiyata göre artan");
+            GetParfumeList();
+            break;
+        case "desc":
+            OrderByParam = "desc";
+            $('#dropdownMenu2').html("Fiyata göre azalan");
+            GetParfumeList();
+            break;
+        default:
+            OrderByParam = "asc";
+            $('#dropdownMenu2').html("Fiyata göre artan");
+            GetParfumeList();
+            break;
+    }
+}
+
+
+function sendSearchValue() {
+    var searchValue = $('#search').val();
+    var brandSelection = Number($('#parfume-brands').val());
+
+    var url = "http://localhost:5025/Home/GetFilterData?searchText=" + searchValue + "&orderBy=" + OrderByParam + "&brandId=" + brandSelection;
+
+    Get(url, {}, function (data) {
+        /*toastr.success(data);*/
+    }, function (errorThrown) {
+        toaster.error("Hatalı");
+    });
 }
